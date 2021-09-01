@@ -3,4 +3,8 @@
 		"caption": "SuiteCloud IDE: Upload File",
 		"command": "upload_file"
 	},
+	{
+		"caption": "SuiteCloud IDE: Create Project",
+		"command": "create_project"
+	},
 ]

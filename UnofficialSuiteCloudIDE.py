@@ -6,6 +6,43 @@ import subprocess
 
 import sublime_lib
 
+# TODO Create Function for Adding Authentication to a Project
+
+class createProjectCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		filePath = self.view.file_name();
+		folderPath = os.path.dirname(os.path.abspath(filePath));
+
+		# Prompt the user for the Project Path then prompt the user for the Project Name.
+		def projectPathChosen(path):
+			def projectNameChosen(projectName):
+				# TODO Add indicator?
+				print("Creating Project: " + projectName + " . . .");
+
+				# Have to go to the parent directory because SuiteCloud CLI
+				# creates the folder for the project in the currend directory
+				os.chdir(getParentPath(path));
+				# TODO Handle Errors
+				try:
+					returned = subprocess.check_output("suitecloud project:create --type ACCOUNTCUSTOMIZATION --projectname \"" + projectName +"\"", shell=True, universal_newlines=True);
+				except:
+					sublime.error_message('Error creating project. Does the project already exist?');
+					return;
+
+				print(projectName + " was successfully created.");
+				def statusMessage():
+					self.view.window().status_message(projectName + " was successfully created.");
+				sublime.set_timeout_async(statusMessage, 1);
+
+			# Chop off the last separator if there is one
+			if path.endswith(os.sep):
+				print(path[:-1]);
+				path = path[:-1];
+
+			self.view.window().show_input_panel("Project Name", os.path.basename(path), projectNameChosen, None, None);
+
+		self.view.window().show_input_panel("Project Path (Same as the project's path in Eclipse)", folderPath, projectPathChosen, None, None);
+
 class uploadFileCommand(sublime_plugin.TextCommand):
 
 	def run(self, edit):
@@ -17,7 +54,8 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 
 			projectPath = findProjectPath(filePath);
 			if projectPath == False:
-				sublime.message_dialog("Project not found.");
+				# TODO Run the Create Project Function
+				sublime.error_message("Project not found.");
 				return;
 
 			os.chdir(projectPath);
@@ -38,7 +76,7 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 			if os.sep == "\\":
 				fileSystemNetSuiteFileCabinetPath = netSuiteFileCabinetPath.replace("/", "\\");
 			if netSuiteFileCabinetPath == False:
-				sublime.message_dialog("README not found.");
+				sublime.error_message("README not found.");
 				return;
 
 			# TODO Combine these into a function
@@ -62,12 +100,13 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 					self.view.window().status_message(fileName + " was successfully uploaded.");
 				sublime.set_timeout_async(statusMessage, 1);
 			else:
-				print(fileName + " failed to upload! Error:" + os.linesep + success);
-				sublime.message_dialog(fileName + " failed to upload! Error:" + os.linesep + os.linesep + success);
+				# TODO Check for Authentication error and handle that with a new authentication function :)
+				sublime.error_message(fileName + " failed to upload! Error:" + os.linesep + os.linesep + success);
 
 			# Delete the file to keep the file system clean
 			subprocess.call("del \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + fileName, shell=True);
 
+		# Kick off to another thread
 		sublime.set_timeout_async(everything, 1);
 
 def findProjectPath(filePath):
