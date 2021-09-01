@@ -6,6 +6,8 @@ import subprocess
 
 import sublime_lib
 
+weirdErrorPrefix = "[2K[1G";
+
 class manageAuthenticationCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		os.system("suitecloud account:manageauth -i");
@@ -41,8 +43,8 @@ class createProjectCommand(sublime_plugin.TextCommand):
 				# TODO Handle Errors
 				try:
 					returned = subprocess.check_output("suitecloud project:create --type ACCOUNTCUSTOMIZATION --projectname \"" + projectName +"\"", shell=True, universal_newlines=True);
-				except:
-					sublime.error_message('Error creating project. Does the project already exist?');
+				except subprocess.CalledProcessError as e:
+					sublime.error_message(e.output.replace(weirdErrorPrefix, ""));
 					return;
 
 				print(projectName + " was successfully created.");
@@ -104,19 +106,32 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 			subprocess.call("xcopy /y \"" + filePath + "\" \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + "\"", shell=True);
 
 			# Upload the file to NetSuite
+			success = False;
 			command = "suitecloud file:upload --paths \"/" + netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName + "\"";
-			success = subprocess.check_output(command, shell=True, universal_newlines=True);
+			try:
+				success = subprocess.check_output(command, shell=True, universal_newlines=True);
+			except subprocess.CalledProcessError as e:
+				# If it's an authentication issue, ask to set up the project auth for the user.
+				if "authentication ID (authID) is not available" in e.output:
+					error = e.output.replace(weirdErrorPrefix, "");
+					authenticationMessage = error + os.linesep + os.linesep + "Would you like to Setup Project Authentication now?"
+					authSetupRequested = sublime.ok_cancel_dialog(authenticationMessage, "Setup Authentication");
+
+					if authSetupRequested:
+						self.view.run_command('setup_authentication');
+				else:
+					sublime.error_message(error);
 
 			indicator.stop();
 
 			if "The following files were uploaded:" in success:
 				# TODO Combine these into a function
-				print(fileName + " was successfully uploaded.");
+				print(success);
 				def statusMessage():
 					self.view.window().status_message(fileName + " was successfully uploaded.");
 				sublime.set_timeout_async(statusMessage, 1);
 			else:
-				# TODO Check for Authentication error and handle that with a new authentication function :)
+				# We don't know what happened. Haven't seen this happen yet.
 				sublime.error_message(fileName + " failed to upload! Error:" + os.linesep + os.linesep + success);
 
 			# Delete the file to keep the file system clean
