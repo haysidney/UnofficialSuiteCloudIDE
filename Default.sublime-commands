@@ -7,4 +7,8 @@
 		"caption": "SuiteCloud IDE: Create Project",
 		"command": "create_project"
 	},
+	{
+		"caption": "SuiteCloud IDE: Setup Project Authentication",
+		"command": "setup_authentication"
+	},
 ]

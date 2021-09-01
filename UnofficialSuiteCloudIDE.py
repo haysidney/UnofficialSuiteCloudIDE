@@ -6,7 +6,19 @@ import subprocess
 
 import sublime_lib
 
-# TODO Create Function for Adding Authentication to a Project
+class setupAuthenticationCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		filePath = self.view.file_name();
+		folderPath = os.path.dirname(os.path.abspath(filePath));
+		projectPath = findProjectPath(folderPath);
+		if projectPath == False:
+			# TODO Run the Create Project Function
+			sublime.error_message("Project not found.");
+			return;
+
+		os.chdir(projectPath);
+
+		os.system("suitecloud account:setup");
 
 class createProjectCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
