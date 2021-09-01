@@ -101,7 +101,7 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 			indicator.start();
 
 			# Copy file to the FileCabinet folder of the SDF project
-			subprocess.call("xcopy \"" + filePath + "\" \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + "\"", shell=True);
+			subprocess.call("xcopy /y \"" + filePath + "\" \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + "\"", shell=True);
 
 			# Upload the file to NetSuite
 			command = "suitecloud file:upload --paths \"/" + netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName + "\"";
