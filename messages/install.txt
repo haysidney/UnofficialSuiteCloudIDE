@@ -1,0 +1,28 @@
+Unofficial SuiteCloud IDE for Sublime Text
+============
+
+Enables Sublime Text to upload SuiteScripts to the NetSuite File Cabinet using
+SuiteCloud CLI for NodeJS.
+
+Features:
+- Create SuiteCloud CLI Projects
+- Set up Project Authentication (via Browser Auth or Token)
+- Manage global SuiteClould CLI Authentication
+- Upload SuiteScripts to the NetSuite FileCabinet
+
+Prerequisites
+-----
+
+- Follow the prerequisites from: https://netsuite.custhelp.com/app/answers/detail/a_id/91799
+    + Install JDK 11 from: https://www.oracle.com/java/technologies/javase-jdk11-downloads.html
+    + Install Node.js from: https://nodejs.org/en/
+        * I use the LTS version:
+            - https://nodejs.org/download/release/latest-v14.x/
+
+Usage
+-----
+
+To use the plugin, open the Command Palette and search for `SuiteCloud IDE:`. You
+can see the default key bindings in the palette, or alternatively browse
+"Preferences > Package Settings > SuiteCloud IDE > Key Bindings" in the
+menu.
