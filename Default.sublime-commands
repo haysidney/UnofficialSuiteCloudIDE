@@ -11,4 +11,8 @@
 		"caption": "SuiteCloud IDE: Setup Project Authentication",
 		"command": "setup_authentication"
 	},
+	{
+		"caption": "SuiteCloud IDE: Manage Authentication",
+		"command": "manage_authentication"
+	},
 ]

@@ -6,6 +6,10 @@ import subprocess
 
 import sublime_lib
 
+class manageAuthenticationCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		os.system("suitecloud account:manageauth -i");
+
 class setupAuthenticationCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		filePath = self.view.file_name();
