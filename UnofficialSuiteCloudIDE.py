@@ -48,8 +48,9 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 			indicator.start();
 
 			# Download the file from NetSuite
+			importFilePath = netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName;
 			importResponse = False;
-			command = "suitecloud file:import --paths \"/" + netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName + "\"";
+			command = "suitecloud file:import --paths \"/" + importFilePath + "\"";
 			try:
 				importResponse = subprocess.check_output(command, shell=True, universal_newlines=True);
 			except subprocess.CalledProcessError as e:
@@ -103,8 +104,11 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 					subprocess.call("del \"" + file + "\"", shell=True);
 
 			else:
-				# We don't know what happened. Haven't seen this happen yet.
-				sublime.error_message(fileName + " failed to import! Error:" + os.linesep + os.linesep + importResponse.replace(weirdErrorPrefix, ""));
+				if "INVALID FILE PATH:" in importResponse:
+					sublime.error_message("File does not exist in the File Cabinet:" + os.linesep + importFilePath);
+				else:
+					# We don't know what happened. Haven't seen this happen yet.
+					sublime.error_message(fileName + " failed to import! Error:" + os.linesep + os.linesep + importResponse.replace(weirdErrorPrefix, ""));
 
 		# Kick off to another thread
 		sublime.set_timeout_async(everything, 1);
