@@ -4,6 +4,10 @@
 		"command": "upload_file"
 	},
 	{
+		"caption": "SuiteCloud IDE: Compare Vs File Cabinet",
+		"command": "compare_versus_file_cabinet"
+	},
+	{
 		"caption": "SuiteCloud IDE: Create Project",
 		"command": "create_project"
 	},

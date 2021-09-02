@@ -8,6 +8,107 @@ import sublime_lib
 
 weirdErrorPrefix = "[2K[1G";
 
+class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		def everything():
+			self.view.run_command('save');
+			filePath = self.view.file_name();
+			fileName = os.path.split(os.path.abspath(filePath))[1];
+			folderPath = os.path.dirname(os.path.abspath(filePath));
+
+			projectPath = findProjectPath(filePath);
+			if projectPath == False:
+				# TODO Run the Create Project Function
+				sublime.error_message("Project not found.");
+				return;
+
+			os.chdir(projectPath);
+
+			# TODO Get src directory name from suitecloud.config.js
+			srcFolder = "src";
+			fileCabinetFolderPath = projectPath + os.sep + srcFolder + os.sep + "FileCabinet";
+
+			projectPathDifference = "";
+			if folderPath != projectPath:
+				projectPathDifference = folderPath.replace(projectPath, "")
+
+			netSuiteFileCabinetPath = getNetSuiteFileCabinetPathFromReadme(projectPath);
+			# Normalized to OS path separator
+			fileSystemNetSuiteFileCabinetPath = netSuiteFileCabinetPath;
+			# The README uses forward slashes, fix them if we're on Windows
+			if os.sep == "\\":
+				fileSystemNetSuiteFileCabinetPath = netSuiteFileCabinetPath.replace("/", "\\");
+			if netSuiteFileCabinetPath == False:
+				sublime.error_message("README not found.");
+				return;
+
+			# TODO Combine these into a function
+			print("Downloading " + fileName + " . . .");
+			indicator = sublime_lib.ActivityIndicator(self.view.window(), "Downloading " + fileName)
+			indicator.start();
+
+			# Download the file from NetSuite
+			importResponse = False;
+			command = "suitecloud file:import --paths \"/" + netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName + "\"";
+			try:
+				importResponse = subprocess.check_output(command, shell=True, universal_newlines=True);
+			except subprocess.CalledProcessError as e:
+				# If it's an authentication issue, ask to set up the project auth for the user.
+				if "authentication ID (authID) is not available" in e.output:
+					error = e.output.replace(weirdErrorPrefix, "");
+					authenticationMessage = error + os.linesep + os.linesep + "Would you like to Setup Project Authentication now?"
+					authSetupRequested = sublime.ok_cancel_dialog(authenticationMessage, "Setup Authentication");
+
+					if authSetupRequested:
+						self.view.run_command('setup_authentication');
+				else:
+					sublime.error_message(error);
+
+			indicator.stop();
+
+			if "The following files were imported:" in importResponse:
+				# TODO Combine these into a function
+				def statusMessage():
+					self.view.window().status_message(fileName + " was successfully imported.");
+				sublime.set_timeout_async(statusMessage, 1);
+
+				fileCabinetFilePath = fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + fileName;
+				command = "sgdm \"" + filePath + "\" \"" + fileCabinetFilePath + "\"";
+
+				try:
+					subprocess.check_output(command, shell=True, universal_newlines=True);
+				except:
+					sublime.error_message("Compare failed. Do you have DiffMerge installed? Make sure you restart Sublime Text after installing DiffMerge.");
+					return;
+
+				# File imports download XML files along with the requested file.
+				# We don't want them clogging stuff up, so we'll delete them.
+				lines = importResponse.splitlines();
+				filesToDelete = [];
+				foundFilesStart = False;
+				for line in lines:
+					if foundFilesStart:
+						# Convert path to local filesystem path
+						if os.sep == "\\":
+							line = line.replace("/", "\\");
+						path = fileCabinetFolderPath + line;
+
+						filesToDelete.append(path);
+					else:
+						if "The following files were imported:" in line:
+							foundFilesStart = True;
+
+				# Delete the files to keep the file system clean
+				for file in filesToDelete:
+					subprocess.call("del \"" + file + "\"", shell=True);
+
+			else:
+				# We don't know what happened. Haven't seen this happen yet.
+				sublime.error_message(fileName + " failed to import! Error:" + os.linesep + os.linesep + importResponse.replace(weirdErrorPrefix, ""));
+
+		# Kick off to another thread
+		sublime.set_timeout_async(everything, 1);
+
 class manageAuthenticationCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		os.system("suitecloud account:manageauth -i");
@@ -132,7 +233,7 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 				sublime.set_timeout_async(statusMessage, 1);
 			else:
 				# We don't know what happened. Haven't seen this happen yet.
-				sublime.error_message(fileName + " failed to upload! Error:" + os.linesep + os.linesep + success);
+				sublime.error_message(fileName + " failed to upload! Error:" + os.linesep + os.linesep + success.replace(weirdErrorPrefix, ""));
 
 			# Delete the file to keep the file system clean
 			subprocess.call("del \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + fileName, shell=True);

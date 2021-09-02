@@ -8,7 +8,8 @@ Features:
 - Create SuiteCloud CLI Projects
 - Set up Project Authentication (via Browser Auth or Token)
 - Manage global SuiteClould CLI Authentication
-- Upload SuiteScripts to the NetSuite FileCabinet
+- Upload SuiteScripts to the NetSuite File Cabinet
+- Compare SuiteScript versus the NetSuite File Cabinet
 
 Prerequisites
 -----
@@ -18,6 +19,8 @@ Prerequisites
     + Install Node.js from: https://nodejs.org/en/
         * I use the LTS version:
             - https://nodejs.org/download/release/latest-v14.x/
+    + Install DiffMerge (to enable File Cabinet comparison):
+        * https://sourcegear.com/diffmerge/downloads.php
 
 Usage
 -----
