@@ -289,6 +289,19 @@ def createProject(self, filePath):
 			# Have to go to the parent directory because SuiteCloud CLI
 			# creates the folder for the project in the currend directory
 			os.chdir(getParentPath(path));
+
+			# Run suitecloud alone first. I've seen the project folder be deleted when running this without JDK 11 being installed..
+			try:
+				returned = subprocess.check_output("suitecloud", shell=True, universal_newlines=True);
+			except subprocess.CalledProcessError as e:
+				# "suitecloud" always returns as an error.
+				error = e.output.replace(weirdErrorPrefix, "");
+				# Check to see if it actually returns a version.
+				if "SuiteCloud CLI for Node.js (NetSuite " not in error:
+					# Presumably the error is JDK related. Bail out to prevent damage.
+					sublime.error_message(error);
+					return;
+
 			# TODO Handle Errors
 			try:
 				returned = subprocess.check_output("suitecloud project:create --type ACCOUNTCUSTOMIZATION --projectname \"" + projectName +"\"", shell=True, universal_newlines=True);
