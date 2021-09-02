@@ -285,7 +285,7 @@ def getNetSuiteFileCabinetPathFromReadme(projectPath):
 	readmeFileLines = readmeFile.readlines();
 
 	for line in readmeFileLines:
-		if (line.startswith("SuiteScripts/")):
+		if line.startswith("SuiteScripts/") or line.startswith("SuiteBundles/"):
 			print("Found NetSuite File Cabinet Path: " + line.strip());
 			return line.strip();
 
