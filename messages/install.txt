@@ -21,6 +21,18 @@ Prerequisites
             - https://nodejs.org/download/release/latest-v14.x/
     + Install DiffMerge (to enable File Cabinet comparison):
         * https://sourcegear.com/diffmerge/downloads.php
+    + Install SuiteCloud CLI
+        * npm install -g @oracle/suitecloud-cli
+
+Installation
+-----
+
+- Open the Command Palette (by default CTRL+SHIFT+P)
+- Add Repository
+    + https://github.com/ozzzzysh/
+- Open the Command Palette again
+- Install Package
+    + UnofficialSuiteCloudIDE
 
 Usage
 -----
