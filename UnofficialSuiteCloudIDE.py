@@ -18,8 +18,10 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 
 			projectPath = findProjectPath(filePath);
 			if projectPath == False:
-				# TODO Run the Create Project Function
-				sublime.error_message("Project not found.");
+				projectMessage = "Project not found. Would you like to create a new project now?"
+				projectRequested = sublime.ok_cancel_dialog(projectMessage, "Create Project");
+				if projectRequested:
+					createProject(self, filePath);
 				return;
 
 			os.chdir(projectPath);
@@ -54,14 +56,16 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 			try:
 				importResponse = subprocess.check_output(command, shell=True, universal_newlines=True);
 			except subprocess.CalledProcessError as e:
+				error = e.output.replace(weirdErrorPrefix, "");
 				# If it's an authentication issue, ask to set up the project auth for the user.
-				if "authentication ID (authID) is not available" in e.output:
-					error = e.output.replace(weirdErrorPrefix, "");
+				if "authentication ID (authID) is not available" in e.output or "No account has been set up for this project." in e.output:
 					authenticationMessage = error + os.linesep + os.linesep + "Would you like to Setup Project Authentication now?"
 					authSetupRequested = sublime.ok_cancel_dialog(authenticationMessage, "Setup Authentication");
 
 					if authSetupRequested:
-						self.view.run_command('setup_authentication');
+						setupAuthentication(self, filePath);
+						indicator.stop();
+						return;
 				else:
 					sublime.error_message(error);
 
@@ -120,51 +124,12 @@ class manageAuthenticationCommand(sublime_plugin.TextCommand):
 class setupAuthenticationCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		filePath = self.view.file_name();
-		folderPath = os.path.dirname(os.path.abspath(filePath));
-		projectPath = findProjectPath(folderPath);
-		if projectPath == False:
-			# TODO Run the Create Project Function
-			sublime.error_message("Project not found.");
-			return;
-
-		os.chdir(projectPath);
-
-		os.system("suitecloud account:setup");
+		setupAuthentication(self, filePath);
 
 class createProjectCommand(sublime_plugin.TextCommand):
 	def run(self, edit):
 		filePath = self.view.file_name();
-		folderPath = os.path.dirname(os.path.abspath(filePath));
-
-		# Prompt the user for the Project Path then prompt the user for the Project Name.
-		def projectPathChosen(path):
-			def projectNameChosen(projectName):
-				# TODO Add indicator?
-				print("Creating Project: " + projectName + " . . .");
-
-				# Have to go to the parent directory because SuiteCloud CLI
-				# creates the folder for the project in the currend directory
-				os.chdir(getParentPath(path));
-				# TODO Handle Errors
-				try:
-					returned = subprocess.check_output("suitecloud project:create --type ACCOUNTCUSTOMIZATION --projectname \"" + projectName +"\"", shell=True, universal_newlines=True);
-				except subprocess.CalledProcessError as e:
-					sublime.error_message(e.output.replace(weirdErrorPrefix, ""));
-					return;
-
-				print(projectName + " was successfully created.");
-				def statusMessage():
-					self.view.window().status_message(projectName + " was successfully created.");
-				sublime.set_timeout_async(statusMessage, 1);
-
-			# Chop off the last separator if there is one
-			if path.endswith(os.sep):
-				print(path[:-1]);
-				path = path[:-1];
-
-			self.view.window().show_input_panel("Project Name", os.path.basename(path), projectNameChosen, None, None);
-
-		self.view.window().show_input_panel("Project Path (Same as the project's path in Eclipse)", folderPath, projectPathChosen, None, None);
+		createProject(self, filePath);
 
 class uploadFileCommand(sublime_plugin.TextCommand):
 
@@ -177,8 +142,10 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 
 			projectPath = findProjectPath(filePath);
 			if projectPath == False:
-				# TODO Run the Create Project Function
-				sublime.error_message("Project not found.");
+				projectMessage = "Project not found. Would you like to create a new project now?"
+				projectRequested = sublime.ok_cancel_dialog(projectMessage, "Create Project");
+				if projectRequested:
+					createProject(self, filePath);
 				return;
 
 			os.chdir(projectPath);
@@ -217,13 +184,15 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 				success = subprocess.check_output(command, shell=True, universal_newlines=True);
 			except subprocess.CalledProcessError as e:
 				# If it's an authentication issue, ask to set up the project auth for the user.
-				if "authentication ID (authID) is not available" in e.output:
+				if "authentication ID (authID) is not available" in e.output or "No account has been set up for this project." in e.output:
 					error = e.output.replace(weirdErrorPrefix, "");
 					authenticationMessage = error + os.linesep + os.linesep + "Would you like to Setup Project Authentication now?"
 					authSetupRequested = sublime.ok_cancel_dialog(authenticationMessage, "Setup Authentication");
 
 					if authSetupRequested:
-						self.view.run_command('setup_authentication');
+						setupAuthentication(self, filePath);
+						indicator.stop();
+						return;
 				else:
 					sublime.error_message(error);
 
@@ -294,3 +263,49 @@ def getNetSuiteFileCabinetPathFromReadme(projectPath):
 			return line.strip();
 
 	return False;
+
+def setupAuthentication(self, filePath):
+	projectPath = findProjectPath(filePath);
+	if projectPath == False:
+		projectMessage = "Project not found. Would you like to create a new project now?"
+		projectRequested = sublime.ok_cancel_dialog(projectMessage, "Create Project");
+		if projectRequested:
+			createProject(self, filePath);
+		return;
+
+	os.chdir(projectPath);
+
+	os.system("suitecloud account:setup");
+
+def createProject(self, filePath):
+	folderPath = os.path.dirname(os.path.abspath(filePath));
+
+	# Prompt the user for the Project Path then prompt the user for the Project Name.
+	def projectPathChosen(path):
+		def projectNameChosen(projectName):
+			# TODO Add indicator?
+			print("Creating Project: " + projectName + " . . .");
+
+			# Have to go to the parent directory because SuiteCloud CLI
+			# creates the folder for the project in the currend directory
+			os.chdir(getParentPath(path));
+			# TODO Handle Errors
+			try:
+				returned = subprocess.check_output("suitecloud project:create --type ACCOUNTCUSTOMIZATION --projectname \"" + projectName +"\"", shell=True, universal_newlines=True);
+			except subprocess.CalledProcessError as e:
+				sublime.error_message(e.output.replace(weirdErrorPrefix, ""));
+				return;
+
+			print(projectName + " was successfully created.");
+			def statusMessage():
+				self.view.window().status_message(projectName + " was successfully created.");
+			sublime.set_timeout_async(statusMessage, 1);
+
+		# Chop off the last separator if there is one
+		if path.endswith(os.sep):
+			print(path[:-1]);
+			path = path[:-1];
+
+		self.view.window().show_input_panel("Project Name", os.path.basename(path), projectNameChosen, None, None);
+
+	self.view.window().show_input_panel("Project Path (Same as the project's path in Eclipse)", folderPath, projectPathChosen, None, None);
