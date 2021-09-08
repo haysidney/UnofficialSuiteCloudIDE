@@ -15,7 +15,7 @@ class projectInfoCommand(sublime_plugin.TextCommand):
 		def everything():
 			filePath = self.view.file_name();
 			projectPath = findProjectPath(filePath);
-			if not projectExists(projectPath, filePath):
+			if not projectExists(self, projectPath, filePath):
 				return;
 
 			fileCabinetFolderPath = getNetSuiteFileCabinetPathFromReadme(projectPath);
@@ -70,7 +70,7 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 			folderPath = os.path.dirname(os.path.abspath(filePath));
 
 			projectPath = findProjectPath(filePath);
-			if not projectExists(projectPath, filePath):
+			if not projectExists(self, projectPath, filePath):
 				return;
 
 			os.chdir(projectPath);
@@ -187,7 +187,7 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 			folderPath = os.path.dirname(os.path.abspath(filePath));
 
 			projectPath = findProjectPath(filePath);
-			if not projectExists(projectPath, filePath):
+			if not projectExists(self, projectPath, filePath):
 				return;
 
 			os.chdir(projectPath);
@@ -271,7 +271,7 @@ def findProjectPath(filePath):
 			else:
 				projectPathToCheck = getParentPath(projectPathToCheck);
 
-def projectExists(projectPath, filePath):
+def projectExists(self, projectPath, filePath):
 	if projectPath == False:
 		projectMessage = "Project not found. Would you like to create a new project now?"
 		projectRequested = sublime.ok_cancel_dialog(projectMessage, "Create Project");
@@ -313,7 +313,7 @@ def getNetSuiteFileCabinetPathFromReadme(projectPath):
 
 def setupAuthentication(self, filePath):
 	projectPath = findProjectPath(filePath);
-	if not projectExists(projectPath, filePath):
+	if not projectExists(self, projectPath, filePath):
 		return;
 
 	os.chdir(projectPath);
