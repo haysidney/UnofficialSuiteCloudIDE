@@ -20,10 +20,7 @@ class projectInfoCommand(sublime_plugin.TextCommand):
 
 			fileCabinetFolderPath = getNetSuiteFileCabinetPathFromReadme(projectPath);
 
-			# TODO Combine these into a function
-			print("Getting Project Info . . .");
-			indicator = sublime_lib.ActivityIndicator(self.view.window(), "Getting Project Info");
-			indicator.start();
+			indicator = startIndicator(self, "Getting Project Info");
 
 			# Get Project Name
 			# TODO Handle no Project file
@@ -96,10 +93,7 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 				sublime.error_message("README not found.");
 				return;
 
-			# TODO Combine these into a function
-			print("Downloading " + fileName + " . . .");
-			indicator = sublime_lib.ActivityIndicator(self.view.window(), "Downloading " + fileName)
-			indicator.start();
+			indicator = startIndicator(self, "Downloading " + fileName);
 
 			# Download the file from NetSuite
 			importFilePath = netSuiteFileCabinetPath + projectPathDifference.replace("\\", "/") + "/" + fileName;
@@ -217,10 +211,7 @@ class uploadFileCommand(sublime_plugin.TextCommand):
 				sublime.error_message("README not found.");
 				return;
 
-			# TODO Combine these into a function
-			print("Uploading " + fileName + " . . .");
-			indicator = sublime_lib.ActivityIndicator(self.view.window(), "Uploading " + fileName)
-			indicator.start();
+			indicator = startIndicator(self, "Uploading " + fileName);
 
 			# Copy file to the FileCabinet folder of the SDF project
 			subprocess.call("xcopy /y \"" + filePath + "\" \"" + fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + "\"", shell=True);
@@ -374,3 +365,9 @@ def createProject(self, filePath):
 		self.view.window().show_input_panel("Project Name", os.path.basename(path), projectNameChosen, None, None);
 
 	self.view.window().show_input_panel("Project Path (Same as the project's path in Eclipse)", folderPath, projectPathChosen, None, None);
+
+def startIndicator(self, text):
+	print(text + " . . .");
+	indicator = sublime_lib.ActivityIndicator(self.view.window(), text);
+	indicator.start();
+	return indicator;
