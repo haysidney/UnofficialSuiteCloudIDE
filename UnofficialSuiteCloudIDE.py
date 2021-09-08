@@ -1,12 +1,72 @@
 import sublime
 import sublime_plugin
 
+import json
 import os
 import subprocess
+import xml.etree.ElementTree as ElementTree
 
 import sublime_lib
 
 weirdErrorPrefix = "[2K[1G";
+
+class projectInfoCommand(sublime_plugin.TextCommand):
+	def run(self, edit):
+		def everything():
+			filePath = self.view.file_name();
+			projectPath = findProjectPath(filePath);
+			if projectPath == False:
+				projectMessage = "Project not found. Would you like to create a new project now?"
+				projectRequested = sublime.ok_cancel_dialog(projectMessage, "Create Project");
+				if projectRequested:
+					createProject(self, filePath);
+				return;
+
+			fileCabinetFolderPath = getNetSuiteFileCabinetPathFromReadme(projectPath);
+
+			# TODO Combine these into a function
+			print("Getting Project Info . . .");
+			indicator = sublime_lib.ActivityIndicator(self.view.window(), "Getting Project Info");
+			indicator.start();
+
+			# Get Project Name
+			# TODO Handle no Project file
+			projectName = "Not Found";
+			tree = ElementTree.parse(projectPath + os.sep + ".project");
+			root = tree.getroot();
+			for child in root:
+				if child.tag == "name":
+					projectName = child.text;
+					break;
+
+			# Get Auth ID
+			# TODO Handle no Project JSON
+			projectJSONFileName = "project.json";
+			projectJSONFile = open(projectPath + os.sep + projectJSONFileName, "r");
+			projectJSON = json.load(projectJSONFile);
+			authId = projectJSON["defaultAuthId"];
+
+			# Get Account ID
+			# TODO Handle No Auth
+			accountId = "Not Found";
+			command = "suitecloud account:manageauth --info " + authId;
+			authInfo = subprocess.check_output(command, shell=True, universal_newlines=True);
+			for line in authInfo.splitlines():
+				if line.startswith("Account ID: "):
+					accountId = line.replace("Account ID: ", "");
+
+			projectInfo = "Project Name: " + projectName + os.linesep + os.linesep;
+			projectInfo += "Project Path: " + projectPath + os.linesep + os.linesep;
+			projectInfo += "File Cabinet Path: " + fileCabinetFolderPath + os.linesep + os.linesep;
+			projectInfo += "Auth ID: " + authId + os.linesep + os.linesep;
+			projectInfo += "Account ID: " + accountId + os.linesep;
+
+			indicator.stop();
+
+			sublime.message_dialog(projectInfo);
+
+		# Kick off to another thread
+		sublime.set_timeout_async(everything, 1);
 
 class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 	def run(self, edit):

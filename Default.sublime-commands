@@ -19,4 +19,8 @@
 		"caption": "SuiteCloud IDE: Manage Authentication",
 		"command": "manage_authentication"
 	},
+	{
+		"caption": "SuiteCloud IDE: Project Info",
+		"command": "project_info"
+	},
 ]
