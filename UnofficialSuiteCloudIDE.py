@@ -23,30 +23,43 @@ class projectInfoCommand(sublime_plugin.TextCommand):
 			indicator = startIndicator(self, "Getting Project Info");
 
 			# Get Project Name
-			# TODO Handle no Project file
 			projectName = "Not Found";
-			tree = ElementTree.parse(projectPath + os.sep + ".project");
-			root = tree.getroot();
-			for child in root:
-				if child.tag == "name":
-					projectName = child.text;
-					break;
+			try:
+				tree = ElementTree.parse(projectPath + os.sep + "src" + os.sep + "manifest.xml");
+				root = tree.getroot();
+				for child in root:
+					if child.tag == "projectname":
+						projectName = child.text;
+						break;
+			except:
+				pass;
 
 			# Get Auth ID
-			# TODO Handle no Project JSON
-			projectJSONFileName = "project.json";
-			projectJSONFile = open(projectPath + os.sep + projectJSONFileName, "r");
-			projectJSON = json.load(projectJSONFile);
-			authId = projectJSON["defaultAuthId"];
+			authId = "Not Found";
+			try:
+				projectJSONFileName = "project.json";
+				projectJSONFile = open(projectPath + os.sep + projectJSONFileName, "r");
+				projectJSON = json.load(projectJSONFile);
+				authId = projectJSON["defaultAuthId"];
+			except:
+				pass;
 
 			# Get Account ID
 			# TODO Handle No Auth
 			accountId = "Not Found";
-			command = "suitecloud account:manageauth --info " + authId;
-			authInfo = subprocess.check_output(command, shell=True, universal_newlines=True);
-			for line in authInfo.splitlines():
-				if line.startswith("Account ID: "):
-					accountId = line.replace("Account ID: ", "");
+			if authId != "Not Found":
+				command = "suitecloud account:manageauth --info " + authId;
+				try:
+					authInfo = subprocess.check_output(command, shell=True, universal_newlines=True);
+					for line in authInfo.splitlines():
+						if line.startswith("Account ID: "):
+							accountId = line.replace("Account ID: ", "");
+				except subprocess.CalledProcessError as e:
+					error = e.output.replace(weirdErrorPrefix, "");
+					sublime.error_message(error);
+
+					if "authentication ID (authID) is not available" in error:
+						authId += " (Not Found)";
 
 			projectInfo = "Project Name: " + projectName + os.linesep + os.linesep;
 			projectInfo += "Project Path: " + projectPath + os.linesep + os.linesep;
