@@ -270,7 +270,6 @@ def findProjectPath(filePath):
 	projectPathToCheck = parentPath;
 	# Do While Hack
 	while True:
-		print(projectPathToCheck);
 		found = subprocess.check_output("IF EXIST \"" + projectPathToCheck + os.sep + projectFileName + "\" echo 1", shell=True, universal_newlines=True);
 		if (found):
 			print("Project Path Found: " + projectPathToCheck);
@@ -301,7 +300,6 @@ def getNetSuiteFileCabinetPathFromReadme(projectPath):
 	readmePath = projectPath;
 	# Do While Hack
 	while True:
-		print(readmePath);
 		found = subprocess.check_output("IF EXIST \"" + readmePath + os.sep + readmeFileName + "\" echo 1", shell=True, universal_newlines=True);
 		if (found):
 			print("README Path Found: " + readmePath);
