@@ -131,7 +131,7 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 
 			indicator.stop()
 
-			if "The following files were imported:" in importResponse:
+			if importResponse != False and "The following files were imported:" in importResponse:
 				# TODO Combine these into a function
 				def statusMessage():
 					self.view.window().status_message(fileName + " was successfully imported.")
