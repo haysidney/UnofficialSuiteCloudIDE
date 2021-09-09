@@ -142,7 +142,7 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 				fileCabinetFilePath = fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + fileName
 
 				# Load the merge command setting and wrap the parameters in quotes
-				mergeCommandPreference = settings.get("merge_command", "sgdm {filePath} {fileCabinetFilePath}")
+				mergeCommandPreference = settings.get("diff_command", "sgdm {filePath} {fileCabinetFilePath}")
 				command = mergeCommandPreference.format(filePath = "\"" + filePath + "\"", fileCabinetFilePath = "\"" + fileCabinetFilePath + "\"")
 
 				try:
