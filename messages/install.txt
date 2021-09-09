@@ -19,6 +19,7 @@ Prerequisites
     + Install Node.js from: https://nodejs.org/en/
         * I use the LTS version:
             - https://nodejs.org/download/release/latest-v14.x/
+            - Install the x64 MSI
     + Install DiffMerge (to enable File Cabinet comparison):
         * https://sourcegear.com/diffmerge/downloads.php
     + Install SuiteCloud CLI
@@ -27,9 +28,11 @@ Prerequisites
 Installation
 -----
 
-- Open the Command Palette (by default CTRL+SHIFT+P)
+- Open the Command Palette in Sublime Text (by default CTRL+SHIFT+P)
 - Add Repository
     + https://github.com/ozzzzysh/
+    + **NOTE: If you don't see Add Repository, run the following command first:**
+        * Install Package Control
 - Open the Command Palette again
 - Install Package
     + UnofficialSuiteCloudIDE
