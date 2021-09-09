@@ -88,6 +88,8 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 
 			os.chdir(projectPath)
 
+			settings = sublime.load_settings("UnofficialSuiteCloudIDE.sublime-settings")
+
 			# TODO Get src directory name from suitecloud.config.js
 			srcFolder = "src"
 			fileCabinetFolderPath = projectPath + os.sep + srcFolder + os.sep + "FileCabinet"
@@ -138,7 +140,10 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 				sublime.set_timeout_async(statusMessage, 1)
 
 				fileCabinetFilePath = fileCabinetFolderPath + os.sep + fileSystemNetSuiteFileCabinetPath + projectPathDifference + os.sep + fileName
-				command = "sgdm \"" + filePath + "\" \"" + fileCabinetFilePath + "\""
+
+				# Load the merge command setting and wrap the parameters in quotes
+				mergeCommandPreference = settings.get("merge_command", "sgdm {filePath} {fileCabinetFilePath}")
+				command = mergeCommandPreference.format(filePath = "\"" + filePath + "\"", fileCabinetFilePath = "\"" + fileCabinetFilePath + "\"")
 
 				try:
 					subprocess.check_output(command, shell=True, universal_newlines=True)

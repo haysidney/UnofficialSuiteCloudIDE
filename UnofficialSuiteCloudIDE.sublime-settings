@@ -1,0 +1,5 @@
+{
+	// The command to use when comparing vs the File Cabinet
+	// No need to wrap the paths in quotes, that's done for you
+	"merge_command": "sgdm {filePath} {fileCabinetFilePath}"
+}

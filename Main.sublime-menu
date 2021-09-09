@@ -16,13 +16,9 @@
                         "children":
                         [
                             {
-                                "caption": "Command Palette",
+                                "caption": "Settings",
                                 "command": "edit_settings",
-                                "args":
-                                {
-                                    "base_file": "${packages}/UnofficialSuiteCloudIDE/Default.sublime-commands",
-                                    "default": "[\n\t$0\n]\n"
-                                }
+                                "args": { "base_file": "${packages}/UnofficialSuiteCloudIDE/UnofficialSuiteCloudIDE.sublime-settings" },
                             },
                             {
                                 "caption": "Key Bindings",
