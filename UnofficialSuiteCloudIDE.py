@@ -346,17 +346,16 @@ def createProject(self, filePath):
 			# creates the folder for the project in the currend directory
 			os.chdir(getParentPath(path));
 
-			# Run suitecloud alone first. I've seen the project folder be deleted when running this without JDK 11 being installed..
+			# Check Java's version first. I've seen the project folder be deleted when running this without JDK 11 being installed.
+			returned = "";
 			try:
-				returned = subprocess.check_output("suitecloud", shell=True, universal_newlines=True);
-			except subprocess.CalledProcessError as e:
-				# "suitecloud" always returns as an error.
-				error = e.output.replace(weirdErrorPrefix, "");
-				# Check to see if it actually returns a version.
-				if "SuiteCloud CLI for Node.js (NetSuite " not in error:
-					# Presumably the error is JDK related. Bail out to prevent damage.
-					sublime.error_message(error);
+				returned = subprocess.check_output("java --version", shell=True, universal_newlines=True);
+				if not returned.startswith("java 11"):
+					sublime.error_message("Java 11 Not Found." + os.linesep + os.linesep + returned);
 					return;
+			except subprocess.CalledProcessError as e:
+				sublime.error_message("Java 11 Not Found." + os.linesep + os.linesep + returned);
+				return;
 
 			# TODO Handle Errors
 			try:
