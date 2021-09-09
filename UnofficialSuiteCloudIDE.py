@@ -116,6 +116,7 @@ class compareVersusFileCabinetCommand(sublime_plugin.TextCommand):
 				importResponse = subprocess.check_output(command, shell=True, universal_newlines=True);
 			except subprocess.CalledProcessError as e:
 				error = e.output.replace(weirdErrorPrefix, "");
+				error = error.replace("The imported files will overwrite the project files\n", "");
 				# If it's an authentication issue, ask to set up the project auth for the user.
 				if "authentication ID (authID) is not available" in e.output or "No account has been set up for this project." in e.output:
 					authenticationMessage = error + os.linesep + os.linesep + "Would you like to Setup Project Authentication now?"
